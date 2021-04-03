@@ -86,8 +86,24 @@ void loop() {
     if (menuitem==0)
     {
       menuitem=3;
-    }      
+    }
+  } 
+    else if (up && page == 8 ) {
+    up = false;
+    menuitem--;
+    if (menuitem==0)
+    {
+      menuitem=5;
+    }          
   }
+  else if (up && page == 9 ) {
+    up = false;
+    menuitem--;
+    if (menuitem==0)
+    {
+      menuitem=5;
+    }
+  }    
 
 
   
@@ -115,6 +131,24 @@ void loop() {
     down = false;
     menuitem++;
     if (menuitem==4) 
+    {
+      menuitem=1;
+    }      
+  }  
+
+     else if (down && page == 8) {
+    down = false;
+    menuitem++;
+    if (menuitem==6) 
+    {
+      menuitem=1;
+    }      
+  }    
+
+   else if (down && page == 9) {
+    down = false;
+    menuitem++;
+    if (menuitem==6) 
     {
       menuitem=1;
     }      
@@ -185,7 +219,18 @@ void loop() {
     }
     else if (page == 3 && menuitem==1) 
     {
-      page=2;
+      page=7;
+      
+    }
+    else if (page == 3 && menuitem==2) 
+    {
+      page=8;
+      menuitem = 1;
+    }
+    else if (page == 3 && menuitem==3) 
+    {
+      page=9;
+      menuitem = 1;
     }
     else if (page == 4 && menuitem==1) 
     {
@@ -226,6 +271,22 @@ void loop() {
     else if (page == 4) 
     {
       page = 1;
+      menuitem = 3;
+    }
+
+    else if (page == 7) 
+    {
+      page = 3;
+      menuitem = 1;
+    }
+    else if (page == 8) 
+    {
+      page = 3;
+      menuitem = 2;
+    }
+    else if (page == 9) 
+    {
+      page = 3;
       menuitem = 3;
     }
     
@@ -285,7 +346,7 @@ void checkIfBackButtonIsPressed()
   
   void drawMenu()
   {
-    
+//Main menu Interface   
   if (page==1) 
   {    
     display.setTextSize(1);
@@ -316,15 +377,15 @@ void checkIfBackButtonIsPressed()
       display.setTextColor(BLACK, WHITE);
     }    
     display.print(">Alarm ");
-    
-    if (backlight) 
-    {
-      display.print("ON");
-    }
-    else 
-    {
-      display.print("OFF");
-    }
+//    
+//    if (backlight) 
+//    {
+//      display.print("ON");
+//    }
+//    else 
+//    {
+//      display.print("OFF");
+//    }
     display.setCursor(0, 35);
   
     if (menuitem==3) 
@@ -340,7 +401,7 @@ void checkIfBackButtonIsPressed()
     display.display();
   }
     
- 
+//Date and time setting Interface
   else if (page==2) 
   {
     
@@ -359,14 +420,14 @@ void checkIfBackButtonIsPressed()
     display.setTextSize(2);
     display.display();
   }
-
+//Alarm Menu Interface
   else if (page==3)
   {
 
     display.setTextSize(1);
     display.clearDisplay();
     display.setTextColor(BLACK, WHITE);
-    display.setCursor(15, 0);
+    display.setCursor(20, 0);
     display.print("Alarm");
     display.drawFastHLine(0,10,83,BLACK);
     display.setCursor(0, 15);
@@ -405,7 +466,7 @@ void checkIfBackButtonIsPressed()
     display.display();
   }
 
-
+//Setting Menu Interface
   else if (page==4)
   {
 
@@ -450,6 +511,8 @@ void checkIfBackButtonIsPressed()
     display.print(">Reset");
     display.display();
   }
+
+  //Volume setting Interface
   else if (page==5) 
   {
     
@@ -468,6 +531,8 @@ void checkIfBackButtonIsPressed()
     display.setTextSize(2);
     display.display();
   }
+
+  //Contrast setting Interface
   else if (page==6) 
   {
     
@@ -487,6 +552,197 @@ void checkIfBackButtonIsPressed()
     display.display();
   }
   
+  //Alaem setup Interface
+  else if (page==7)
+  {
+    display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(BLACK, WHITE);
+    display.setCursor(0, 0);
+    if (menuitem==1) 
+    { 
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    
+    display.print("<Ringtone1>");
+    display.setCursor(0, 10);
+   
+    if (menuitem==2) 
+    { 
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print("<Ringtone2>");
+    display.setCursor(0, 20);
+   
+    if (menuitem==3) 
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }    
+    display.print("<Ringtone3>");
+    display.setCursor(0, 30);
+
+    if (menuitem==4) 
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }    
+    display.print("<Ringtone4>");
+    display.setCursor(0,40);
+
+    if (menuitem==5) 
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }    
+    display.print("<Ringtone5>");
+    display.display();
+
+  }
+  //Existing alarms interface
+  else if (page==8)
+  {
+    display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(BLACK, WHITE);
+    display.setCursor(0, 0);
+    if (menuitem==1) 
+    { 
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    
+    display.print("<Alarm1>");
+    display.setCursor(0, 10);
+   
+    if (menuitem==2) 
+    { 
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print("<Alarm2>");
+    display.setCursor(0, 20);
+   
+    if (menuitem==3) 
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }    
+    display.print("<Alarm3>");
+    display.setCursor(0, 30);
+
+    if (menuitem==4) 
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }    
+    display.print("<Alarm4>");
+    display.setCursor(0,40);
+
+    if (menuitem==5) 
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }    
+    display.print("<Alarm5>");
+    display.display();
+
+  }
+  //Ringtonee interface
+  else if (page==9)
+  {
+    display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(BLACK, WHITE);
+    display.setCursor(0, 0);
+    if (menuitem==1) 
+    { 
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    
+    display.print("<Ringtone1>");
+    display.setCursor(0, 10);
+   
+    if (menuitem==2) 
+    { 
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print("<Ringtone2>");
+    display.setCursor(0, 20);
+   
+    if (menuitem==3) 
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }    
+    display.print("<Ringtone3>");
+    display.setCursor(0, 30);
+
+    if (menuitem==4) 
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }    
+    display.print("<Ringtone4>");
+    display.setCursor(0,40);
+
+    if (menuitem==5) 
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      display.setTextColor(BLACK, WHITE);
+    }    
+    display.print("<Ringtone5>");
+    display.display();
+  }
   }
 
   
