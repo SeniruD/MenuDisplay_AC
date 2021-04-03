@@ -1,14 +1,19 @@
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
-#include <Fonts/FreeSansBoldOblique24pt7b.h>
+//#include <Fonts/FreeSansBoldOblique24pt7b.h>
+#include <DS3231.h>
+#include <Wire.h>
+
+DS3231 clock;
+RTCDateTime dt;
 
 boolean backlight = true;
 int contrast=50;
 int volume = 10;
 
 int menuitem = 1;
-int page = 1;
+int page = 0;
 
 volatile boolean up = false;
 volatile boolean down = false;
@@ -38,7 +43,9 @@ void setup() {
   digitalWrite(8,LOW); //Turn Backlight ON
   
   Serial.begin(9600);
-  
+  clock.begin();
+  clock.setDateTime(__DATE__, __TIME__);
+ 
   display.begin();      
   display.setContrast(contrast); //Set contrast to 50
   display.clearDisplay(); 
@@ -196,7 +203,12 @@ void loop() {
 //       }
 //    }
 
-    if (page == 1 && menuitem==2) 
+    if (page == 0) 
+    {
+      page = 1;
+      menuitem = 1;
+    }
+    else if (page == 1 && menuitem==2) 
     {
       page = 3;
       menuitem = 1;
@@ -258,7 +270,11 @@ void loop() {
 
    if (back) {
     back = false;
-    if (page == 2) 
+    if (page == 1) 
+    {
+      page = 0;
+    }
+    else if (page == 2) 
     {
       page = 1;
       menuitem = 1;
@@ -346,8 +362,37 @@ void checkIfBackButtonIsPressed()
   
   void drawMenu()
   {
-//Main menu Interface   
-  if (page==1) 
+//Main menu Interface
+
+  if(page == 0){
+    dt = clock.getDateTime();
+  
+    display.setTextSize(3);
+    display.clearDisplay();
+    display.setTextColor(BLACK, WHITE);
+    display.setCursor(2, 13);
+    display.print(dt.hour);
+    display.setCursor(35, 13);
+    display.print(":");
+    display.setCursor(48, 13);
+    display.print(dt.minute);
+    display.setTextSize(1);
+    display.setCursor(15, 0);
+    display.print(dt.hour);
+    display.setCursor(27, 0);
+    display.print(":");
+    display.setCursor(33, 0);
+    display.print(dt.minute);
+    display.setCursor(47, 0);
+    display.print("PM");
+    display.setCursor(63, 0);
+    display.print("TUE");
+    display.setCursor(15, 38);
+    display.print("03/04/2021");
+    display.display();
+  }
+  
+  else if (page==1) 
   {    
     display.setTextSize(1);
     display.clearDisplay();
