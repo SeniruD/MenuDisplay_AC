@@ -1,12 +1,16 @@
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
-//#include <Fonts/FreeSansBoldOblique24pt7b.h>
+#include <Fonts/TomThumb.h>
 #include <DS3231.h>
 #include <Wire.h>
 
+
 DS3231 clock;
 RTCDateTime dt;
+
+extern uint8_t alarmIcon[];
+extern uint8_t batteryIcon[];
 
 boolean backlight = true;
 int contrast=50;
@@ -189,19 +193,7 @@ void loop() {
   if (middle) {
     middle = false;
     
-//    if (page == 1 && menuitem==2) 
-//    {
-//      if (backlight) 
-//      {
-//        backlight = false;
-//        turnBacklightOff();
-//        }
-//      else 
-//      {
-//        backlight = true; 
-//        turnBacklightOn();
-//       }
-//    }
+
 
     if (page == 0) 
     {
@@ -270,7 +262,28 @@ void loop() {
 
    if (back) {
     back = false;
-    if (page == 1) 
+    if (page == 0)
+    {
+      if (backlight) 
+      {
+        backlight = false;
+        turnBacklightOff();
+        display.setTextSize(1);
+        display.setCursor(70, 1);
+        display.write(42);
+        display.display();
+       }
+      else 
+      {
+        backlight = true; 
+        turnBacklightOn();
+        display.setTextSize(1);
+        display.setCursor(70, 1);
+        display.write(15);
+        display.display();
+      }
+    }
+    else if (page == 1) 
     {
       page = 0;
     }
@@ -377,18 +390,35 @@ void checkIfBackButtonIsPressed()
     display.setCursor(48, 13);
     display.print(dt.minute);
     display.setTextSize(1);
-    display.setCursor(15, 0);
+    display.drawBitmap(2, 0, alarmIcon, 7, 8, BLACK);
+    display.setCursor(10, 1);
     display.print(dt.hour);
-    display.setCursor(27, 0);
+    display.setCursor(22, 1);
     display.print(":");
-    display.setCursor(33, 0);
+    display.setCursor(26, 1);
     display.print(dt.minute);
-    display.setCursor(47, 0);
+    display.setFont(&TomThumb);
+    display.setCursor(40, 6);
     display.print("PM");
-    display.setCursor(63, 0);
+    display.setCursor(50, 6);
     display.print("TUE");
-    display.setCursor(15, 38);
+    display.setFont();
+    display.drawFastHLine(0,11,83,BLACK);
+    display.drawFastHLine(0,37,83,BLACK);
+    display.setCursor(15, 40);
     display.print("03/04/2021");
+    if (backlight) 
+      {
+        
+        display.setCursor(70, 1);
+        display.write(42);
+       }
+      else 
+      {
+      
+        display.setCursor(70, 1);
+        display.write(15);
+      }
     display.display();
   }
   
@@ -422,15 +452,6 @@ void checkIfBackButtonIsPressed()
       display.setTextColor(BLACK, WHITE);
     }    
     display.print(">Alarm ");
-//    
-//    if (backlight) 
-//    {
-//      display.print("ON");
-//    }
-//    else 
-//    {
-//      display.print("OFF");
-//    }
     display.setCursor(0, 35);
   
     if (menuitem==3) 
@@ -567,13 +588,11 @@ void checkIfBackButtonIsPressed()
     display.setCursor(15, 0);
     display.print("Volume");
     display.drawFastHLine(0,10,83,BLACK);
-    display.setCursor(5, 15);
-    display.print("Value");
-    display.setTextSize(2);
-    display.setCursor(5, 25);
+    display.setTextSize(3);
+    display.setCursor(8, 20);
+    display.write(17);
+    display.setCursor(34, 20);
     display.print(volume);
- 
-    display.setTextSize(2);
     display.display();
   }
 
@@ -587,13 +606,11 @@ void checkIfBackButtonIsPressed()
     display.setCursor(15, 0);
     display.print("Contrast");
     display.drawFastHLine(0,10,83,BLACK);
-    display.setCursor(5, 15);
-    display.print("Value");
-    display.setTextSize(2);
-    display.setCursor(5, 25);
+    display.setTextSize(3);
+    display.setCursor(8, 20);
+    display.write(42);
+    display.setCursor(34, 20);
     display.print(contrast);
- 
-    display.setTextSize(2);
     display.display();
   }
   
