@@ -6,7 +6,7 @@ int contrast = 10;
 int volume = 10;
 
 int menuitem = 1;
-int page = 1;
+int page = 0;
 
 volatile boolean up = false;
 volatile boolean down = false;
@@ -477,6 +477,9 @@ void checkIfBackButtonIsPressed()
 void drawMenu()
 {
   switch(page){
+    case 0:
+      timeDisplayInt();
+      break;
     case 1:
       mainMenuInt();
       break;
@@ -518,6 +521,12 @@ void drawMenu()
     
 }
 
+void timeDisplayInt(){
+    lcd.setCursor(6, 1);
+    lcd.print("12:34");
+    lcd.setCursor(0, 2);
+    lcd.print("29-04-2021");
+}
 void mainMenuInt(){
     lcd.setCursor(4, 0);
     lcd.print("MAIN MENU");
