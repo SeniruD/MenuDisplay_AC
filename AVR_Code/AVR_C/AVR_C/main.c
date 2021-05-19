@@ -10,113 +10,906 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <stdbool.h>
+#include "lcd.h"
+
 #define BV(x)				(1 << x)
 #define setBit(P,B)			P |= BV(B)
 #define clearBit(P,B)		P &= ~BV(B)
 #define toggleBit(P,B)      P ^= BV(B)
-#define RS                  PORTB3
-#define En                  PORTB2
-#define Line1 0x80
-#define Line2 0xc0
-#define Line3 0x90
-#define Line4 0xD0
 
+bool backlight = true;
+int contrast = 10;
+int volume = 10;
 
-void LCD_Init();
-void LCD_CmdWrite( char cmd);
-void LCD_DataWrite( char data);
-void LCD_GoToXY(char row, char col);
-void LCD_DisplayString(char *string_ptr);
-void LCD_Clear();
+int menuitem = 1;
+int page = 0;
 
+volatile bool up = false;
+volatile bool down = false;
+volatile bool select = false;
+volatile bool back = false;
+
+int downButtonState = 0;
+int upButtonState = 0;
+int selectButtonState = 0;
+int backButtonState = 0;
+int lastDownButtonState = 0;
+int lastSelectButtonState = 0;
+int lastUpButtonState = 0;
+int lastBackButtonState = 0;
+
+void drawMenu();
+void checkIfDownButtonIsPressed();
+void checkIfUpButtonIsPressed();
+void checkIfSelectButtonIsPressed();
+void checkIfBackButtonIsPressed();
+
+//Interface functions
+void timeDisplayInt();
+void mainMenuInt();
+void dateTimeSetInt();
+void alarmMenuInt();
+void settingMenuInt();
+void volumeInt();
+void contrastInt();
+void setAlarmInt();
+void alarmListInt();
+void alarmTonesInt();
+void alarmTonesInt2();
+void alarmListInt2();
+void alarmsettingInt2();
+
+void resetDefaults();
+void setContrast();
+void turnBacklightOn();
+void turnBacklightOff();
 
 int main(void)
 {
 	DDRD = 0x00; //Set PORTD as input pins
     PORTD = 0xF0; //Set PD0, PD1, PD6, PD7 to INPUT PULL_UP
-	
-	LCD_Init();
-	LCD_Clear(0x0C);
-	LCD_DisplayString("Seniru");
+	DDRB = 0xFD;              //Set RS,En,data pins as output
+	clearBit(PORTB,0);   //Turn backlight off 
+	lcdInit();
+
     while (1) 
     {
-		//return 0;
-    }
+		drawMenu();
+
+		downButtonState = digitalRead(7);
+		selectButtonState = digitalRead(6);
+		upButtonState =   digitalRead(5);
+		backButtonState =   digitalRead(4);
+
+		checkIfDownButtonIsPressed();
+		checkIfUpButtonIsPressed();
+		checkIfSelectButtonIsPressed();
+		checkIfBackButtonIsPressed();
+
+        // UP button functions
+ 		if (up && page == 1 ) {
+			up = false;
+			menuitem--;
+			if (menuitem == 0)
+			{
+				menuitem = 3;
+			}
+			} else if (up && page == 2 ) {
+			up = false;
+			contrast--;
+			setContrast();
+		}
+		else if (up && page == 3 ) {
+			up = false;
+			menuitem--;
+			if (menuitem == 0)
+			{
+				menuitem = 3;
+			}
+		}
+		else if (up && page == 4 ) {
+			up = false;
+			menuitem--;
+			if (menuitem == 0)
+			{
+				menuitem = 3;
+			}
+		}
+		else if (up && page == 8 ) {
+			up = false;
+			menuitem--;
+			if (menuitem == 0)
+			{
+				menuitem = 3;
+			}
+		}
+		else if (up && page == 9 ) {
+			up = false;
+			menuitem--;
+			if (menuitem == 0)
+			{
+				menuitem = 3;
+			}
+		}
+		else if (up && page == 10 ) {
+			up = false;
+			menuitem--;
+			if (menuitem == 0)
+			{
+				lcdClear();
+				menuitem = 3;
+				page = 9;
+			}
+		}
+		else if (up && page == 11 ) {
+			up = false;
+			menuitem--;
+			if (menuitem == 0)
+			{
+				lcdClear();
+				menuitem = 3;
+				page = 8;
+			}
+		}
+		else if (up && page == 12 ) {
+			up = false;
+			menuitem--;
+			if (menuitem == 0)
+			{
+				menuitem = 2;
+			}
+		}
+
+
+        // DOWN button functions
+		if (down && page == 1) {
+			down = false;
+			menuitem++;
+			if (menuitem == 4)
+			{
+				menuitem = 1;
+			}
+			} else if (down && page == 2 ) {
+			down = false;
+			contrast++;
+			setContrast();
+		}
+		else if (down && page == 3) {
+			down = false;
+			menuitem++;
+			if (menuitem == 4)
+			{
+				menuitem = 1;
+			}
+		}
+		else if (down && page == 4) {
+			down = false;
+			menuitem++;
+			if (menuitem == 4)
+			{
+				menuitem = 1;
+			}
+		}
+
+		else if (down && page == 8) {
+			down = false;
+			menuitem++;
+			if (menuitem == 4)
+			{
+				lcdClear();
+				page = 11;
+				menuitem = 1;
+			}
+		}
+
+		else if (down && page == 9) {
+			down = false;
+			menuitem++;
+			if (menuitem == 4)
+			{
+				lcdClear();
+				page = 10;
+				menuitem = 1;
+			}
+		}
+		else if (down && page == 10 ) {
+			down = false;
+			menuitem++;
+			if (menuitem == 5)
+			{
+				menuitem = 4;
+			}
+		}
+		else if (down && page == 11 ) {
+			down = false;
+			menuitem++;
+			if (menuitem == 5)
+			{
+				menuitem = 4;
+			}
+		}
+		else if (down && page == 12 ) {
+			down = false;
+			menuitem++;
+			if (menuitem == 3)
+			{
+				menuitem = 0;
+			}
+		}
+
+		else if (up && page == 6 ) {
+			up = false;
+			contrast--;
+			//setContrast();
+		}
+
+		else if (down && page == 6 ) {
+			down = false;
+			contrast++;
+			//setContrast();
+		}
+
+		else if (up && page == 5 ) {
+			up = false;
+			volume--;
+		}
+
+		else if (down && page == 5 ) {
+			down = false;
+			volume++;
+		}
+
+        //SELECT button functions
+		if (select) {
+			select = false;
+
+			if (page == 0)
+			{
+				lcdClear();
+				page = 1;
+				menuitem = 1;
+				
+			}
+			else if (page == 1 && menuitem == 2)
+			{
+				lcdClear();
+				page = 3;
+				menuitem = 1;
+			}
+
+			else if (page == 1 && menuitem == 3)
+			{
+				lcdClear();
+				page = 4;
+				menuitem = 1;
+
+			}
+
+			else if (page == 1 && menuitem == 1)
+			{
+				lcdClear();
+				page = 2;
+			}
+			else if (page == 2)
+			{
+				lcdClear();
+				page = 1;
+			}
+			else if (page == 3 && menuitem == 1)
+			{
+				lcdClear();
+				page = 7;
+			}
+			else if (page == 3 && menuitem == 2)
+			{
+				lcdClear();
+				page = 8;
+				menuitem = 1;
+			}
+			else if (page == 3 && menuitem == 3)
+			{
+				lcdClear();
+				page = 9;
+				menuitem = 1;
+			}
+			else if (page == 4 && menuitem == 1)
+			{
+				lcdClear();
+				page = 5;
+			}
+			else if (page == 4 && menuitem == 2)
+			{
+				lcdClear();
+				page = 6;
+			}
+			else if (page == 4 && menuitem == 3)
+			{
+				resetDefaults();
+			}
+			else if (page == 5)
+			{
+				lcdClear();
+				page = 4;
+				menuitem = 1;
+			}
+			else if (page == 6)
+			{
+				lcdClear();
+				page = 4;
+				menuitem = 2;
+			}
+			else if (page == 7)
+			{
+				lcdClear();
+				page = 3;
+				menuitem = 1;
+			}else if (page == 8 || page ==11)
+			{
+				lcdClear();
+				page = 12;
+				menuitem = 1;
+			}else if (page == 12 && menuitem == 1)
+			{
+				lcdClear();
+				page = 7;
+			}
+		}
+		
+		//BACK button functions 
+		if (back) {
+			back = false;
+			if (page == 0)
+			{
+				if (backlight)
+				{
+					backlight = false;
+					turnBacklightOff();
+				}
+				else
+				{
+					backlight = true;
+					turnBacklightOn();
+				}
+			}
+			else if (page == 1)
+			{
+				lcdClear();
+				page = 0;
+			}
+			else if (page == 2)
+			{
+				lcdClear();
+				page = 1;
+				menuitem = 1;
+			}
+			else if (page == 3)
+			{
+				lcdClear();
+				page = 1;
+				menuitem = 2;
+			}
+			else if (page == 4)
+			{
+				lcdClear();
+				page = 1;
+				menuitem = 3;
+			}
+			else if (page == 5)
+			{
+				lcdClear();
+				page = 4;
+				menuitem = 1;
+			}
+			else if (page == 6)
+			{
+				lcdClear();
+				page = 4;
+				menuitem = 2;
+			}
+
+			else if (page == 7)
+			{
+				lcdClear();
+				page = 3;
+				menuitem = 1;
+			}
+			else if (page == 8)
+			{
+				lcdClear();
+				page = 3;
+				menuitem = 2;
+			}
+			else if (page == 9)
+			{
+				lcdClear();
+				page = 3;
+				menuitem = 3;
+			}
+			else if (page == 10)
+			{
+				lcdClear();
+				page = 9;
+				menuitem = 1;
+			}
+			else if (page == 11)
+			{
+				lcdClear();
+				page = 8;
+				menuitem = 1;
+			}
+			else if (page == 12)
+			{
+				lcdClear();
+				page = 8;
+				menuitem = 1;
+			}
+
+		}
+
+	}
 }
 
-void LCD_Init()
+void checkIfDownButtonIsPressed()
 {
-	_delay_ms(50);
-	DDRB = 0xFD;              //Set RS,En,data pins as output
-	LCD_CmdWrite(0x02);	      //Initialize the LCD in 4bit Mode
-	LCD_CmdWrite(0x28);       //to initialize LCD in 2 lines, 5X7 dots and 4bit mode.
-	LCD_CmdWrite(0x0C);	      // Display ON cursor OFF
-	LCD_CmdWrite(0x01);	      // Clear the LCD
-    LCD_CmdWrite(0x80);	      // Move the Cursor to First line First Position
-	
-	
+	if (downButtonState != lastDownButtonState)
+	{
+		if (downButtonState == 0)
+		{
+			down = true;
+		}
+		_delay_ms(20);
+	}
+	lastDownButtonState = downButtonState;
 }
 
-void LCD_CmdWrite( char cmd)
+void checkIfUpButtonIsPressed()
 {
-	
-	PORTB = (cmd & 0xf0);        // Send the Higher Nibble of the command to LCD
-	clearBit(PORTB,RS);			 // Register select = 0
-	setBit(PORTB,En);            // Enable high to low
-	_delay_us(120);
-	clearBit(PORTB,En);
-	
-	_delay_us(10);				
-	
-	PORTB = ((cmd<<4) & 0xf0);   // Send the Lower Nibble of the command to LCD
-	clearBit(PORTB,RS);          // Register select = 0
-	setBit(PORTB,En);			 // Enable high to low
-	_delay_us(120);
-	clearBit(PORTB,En);	
-	_delay_ms(1);
-
+	if (upButtonState != lastUpButtonState)
+	{
+		if (upButtonState == 0) {
+			up = true;
+		}
+		_delay_ms(20);
+	}
+	lastUpButtonState = upButtonState;
 }
 
-void LCD_DataWrite( char data)
+void checkIfSelectButtonIsPressed()
 {
-	PORTB = (data & 0xf0);	  // Send the Higher Nibble of the Data to LCD
-	setBit(PORTB,RS);         // Register select = 1
-	setBit(PORTB,En);		  // Enable high to low
-	_delay_us(120);
-	clearBit(PORTB,En);
-	
-	_delay_us(10);
-	
-	PORTB = ((data <<4) & 0xf0); // Send the Lower Nibble of the Data to LCD
-	setBit(PORTB,RS);            // Register select = 1
-	setBit(PORTB,En);   		 // Enable high to low
-	_delay_us(120);
-	clearBit(PORTB,En);
-	_delay_ms(1);
+	if (selectButtonState != lastSelectButtonState)
+	{
+		if (selectButtonState == 0) {
+			select = true;
+		}
+		_delay_ms(20);
+	}
+	lastSelectButtonState = selectButtonState;
+}
+
+void checkIfBackButtonIsPressed()
+{
+	if (backButtonState != lastBackButtonState)
+	{
+		if (backButtonState == 0) {
+			back = true;
+		}
+		_delay_ms(20);
+	}
+	lastBackButtonState = backButtonState;
+}
+
+void drawMenu()
+{
+	switch(page){
+		case 0:
+		timeDisplayInt();
+		break;
+		case 1:
+		mainMenuInt();
+		break;
+		case 2:
+		dateTimeSetInt();
+		break;
+		case 3:
+		alarmMenuInt();
+		break;
+		case 4:
+		settingMenuInt();
+		break;
+		case 5:
+		volumeInt();
+		break;
+		case 6:
+		contrastInt();
+		break;
+		case 7:
+		setAlarmInt();
+		break;
+		case 8:
+		alarmListInt();
+		break;
+		case 9:
+		alarmTonesInt();
+		break;
+		case 10:
+		alarmTonesInt2();
+		break;
+		case 11:
+		alarmListInt2();
+		break;
+		case 12:
+		alarmsettingInt2();
+		break;
+		
+	}
 	
 }
 
-void LCD_Clear()
-{
-	LCD_CmdWrite(0x01);	// Clear the LCD and go to First line First Position
-	LCD_CmdWrite(Line1);
+void timeDisplayInt(){
+	lcdSetCursor(6, 1);
+	lcdPrint("12:34");
+	lcdSetCursor(4, 2);
+	lcdPrint("29-04-2021");
+}
+void mainMenuInt(){
+	lcdSetCursor(4, 0);
+	lcdPrint("MAIN MENU");
+	lcdSetCursor(0, 1);
+
+	if (menuitem == 1)
+	{
+		lcdPrint(">Date & Time");
+	}
+	else
+	{
+		lcdPrint(" Date & Time");
+	}
+	lcdSetCursor(0, 2);
+
+	if (menuitem == 2)
+	{
+		lcdPrint(">Alarm");
+	}
+	else
+	{
+		lcdPrint(" Alarm");
+	}
+	
+	lcdSetCursor(0, 3);
+
+	if (menuitem == 3)
+	{
+		lcdPrint(">Settings");
+	}
+	else
+	{
+		lcdPrint(" Settings");
+	}
+	//lcd.display();
 }
 
-void LCD_DisplayString(char *string_ptr)
-{
-	while(*string_ptr)
-	LCD_DataWrite(*string_ptr++);
+void dateTimeSetInt(){
+	
+	lcdSetCursor(6, 1);
+	lcdPrint("12:34");
+	lcdSetCursor(4, 2);
+	lcdPrint("29-04-2021");
 }
 
-void LCD_GoToXY(char row, char col)
-{
-	if (row == 0 && col<16)
-	LCD_CmdWrite((col & 0x0F)|0x80);
-	else if (row == 1 && col<16)
-	LCD_CmdWrite((col & 0x0F)|0xC0);
-	else if (row == 2 && col<16)
-	LCD_CmdWrite(((col) & 0x0F)| 0x90);
-	else if (row == 3 && col<16)
-	LCD_CmdWrite(((col) & 0x0F)|0xD0);
-	LCD_CmdWrite(0x0C); //enable cursor
+void alarmMenuInt(){
+	
+	lcdSetCursor(4, 0);
+	lcdPrint("ALARM MENU");
+	lcdSetCursor(0, 1);
+
+	if (menuitem == 1)
+	{
+		lcdPrint(">Set New Alarm");
+	}
+	else
+	{
+		lcdPrint(" Set New Alarm");
+	}
+	lcdSetCursor(0, 2);
+
+	if (menuitem == 2)
+	{
+		lcdPrint(">Manage Alarms");
+	}
+	else
+	{
+		lcdPrint(" Manage Alarms");
+	}
+	
+	lcdSetCursor(0, 3);
+
+	if (menuitem == 3)
+	{
+		lcdPrint(">Alarm Tones");
+	}
+	else
+	{
+		lcdPrint(" Alarm Tones");
+	}
+	//lcd.display();
 }
+
+void settingMenuInt(){
+	
+	lcdSetCursor(4, 0);
+	lcdPrint("SETTINGS");
+	lcdSetCursor(0, 1);
+
+	if (menuitem == 1)
+	{
+		lcdPrint(">Volume");
+	}
+	else
+	{
+		lcdPrint(" Volume");
+	}
+	lcdSetCursor(0, 2);
+
+	if (menuitem == 2)
+	{
+		lcdPrint(">Contrast");
+	}
+	else
+	{
+		lcdPrint(" Contrast");
+	}
+	
+	lcdSetCursor(0, 3);
+
+	if (menuitem == 3)
+	{
+		lcdPrint(">Reset");
+	}
+	else
+	{
+		lcdPrint(" Reset");
+	}
+	//lcdDisplay();
+}
+
+void volumeInt(){
+	
+	lcdSetCursor(5, 0);
+	lcdPrint("Volume");
+	lcdSetCursor(5, 2);
+	lcdPrint(volume);
+	//lcd.display();
+}
+
+void contrastInt(){
+	
+	lcdSetCursor(4, 0);
+	lcdPrint("Contrast");
+	lcdSetCursor(5, 2);
+	lcdPrint(contrast);
+	//lcd.display();
+}
+
+void setAlarmInt(){
+	lcdSetCursor(6, 1);
+	lcdPrint("12:34");
+	lcdSetCursor(4, 2);
+	lcdPrint("29-04-2021");
+}
+
+void alarmListInt(){
+	
+	lcdSetCursor(4, 0);
+	lcdPrint("ALARM LIST");
+	lcdSetCursor(0, 1);
+
+	if (menuitem == 1)
+	{
+		lcdPrint(">Alarm1");
+	}
+	else
+	{
+		lcdPrint(" Alarm1");
+	}
+	lcdSetCursor(0, 2);
+
+	if (menuitem == 2)
+	{
+		lcdPrint(">Alarm2");
+	}
+	else
+	{
+		lcdPrint(" Alarm2");
+	}
+	
+	lcdSetCursor(0, 3);
+
+	if (menuitem == 3)
+	{
+		lcdPrint(">Alarm3");
+	}
+	else
+	{
+		lcdPrint(" Alarm3");
+	}
+	//lcd.display();
+}
+
+void alarmListInt2(){
+	
+	lcdSetCursor(0, 0);
+	if (menuitem == 1)
+	{
+		lcdPrint(">Alarm4");
+	}
+	else
+	{
+		lcdPrint(" Alarm4");
+	}
+	lcdSetCursor(0, 1);
+
+	if (menuitem == 2)
+	{
+		lcdPrint(">Alarm5");
+	}
+	else
+	{
+		lcdPrint(" Alarm5");
+	}
+	
+	lcdSetCursor(0, 2);
+
+	if (menuitem == 3)
+	{
+		lcdPrint(">Alarm6");
+	}
+	else
+	{
+		lcdPrint(" Alarm6");
+	}
+	
+	lcdSetCursor(0, 3);
+	if (menuitem == 4)
+	{
+		lcdPrint(">Alarm7");
+	}
+	else
+	{
+		lcdPrint(" Alarm7");
+	}
+	//lcd.display();
+}
+
+void alarmTonesInt(){
+	
+	lcdSetCursor(4, 0);
+	lcdPrint("ALARM TONES");
+	lcdSetCursor(0, 1);
+
+	if (menuitem == 1)
+	{
+		lcdPrint(">Alarmtone1");
+	}
+	else
+	{
+		lcdPrint(" Alarmtone1");
+	}
+	lcdSetCursor(0, 2);
+
+	if (menuitem == 2)
+	{
+		lcdPrint(">Alarmtone2");
+	}
+	else
+	{
+		lcdPrint(" Alarmtone2");
+	}
+	
+	lcdSetCursor(0, 3);
+
+	if (menuitem == 3)
+	{
+		lcdPrint(">Alarmtone3");
+	}
+	else
+	{
+		lcdPrint(" Alarmtone3");
+	}
+	//lcd.display();
+}
+
+void alarmTonesInt2(){
+	
+	lcdSetCursor(0, 0);
+	if (menuitem == 1)
+	{
+		lcdPrint(">Alarmtone4");
+	}
+	else
+	{
+		lcdPrint(" Alarmtone4");
+	}
+	lcdSetCursor(0, 1);
+
+	if (menuitem == 2)
+	{
+		lcdPrint(">Alarmtone5");
+	}
+	else
+	{
+		lcdPrint(" Alarmtone5");
+	}
+	
+	lcdSetCursor(0, 2);
+
+	if (menuitem == 3)
+	{
+		lcdPrint(">Alarmtone6");
+	}
+	else
+	{
+		lcdPrint(" Alarmtone6");
+	}
+	
+	lcdSetCursor(0, 3);
+	if (menuitem == 4)
+	{
+		lcdPrint(">Alarmtone7");
+	}
+	else
+	{
+		lcdPrint(" Alarmtone7");
+	}
+	//lcd.display();
+}
+
+void alarmsettingInt2(){
+	lcdSetCursor(2, 0);
+	lcdPrint("ALARM SETTINGS");
+	lcdSetCursor(0, 1);
+
+	if (menuitem == 1)
+	{
+		lcdPrint(">Edit Alarm");
+	}
+	else
+	{
+		lcdPrint(" Edit Alarm");
+	}
+	
+	lcdSetCursor(0, 2);
+	if (menuitem == 2)
+	{
+		lcdPrint(">Delete Alarm");
+	}
+	else
+	{
+		lcdPrint(" Delete Alarm");
+	}
+}
+void resetDefaults()
+{
+	volume = 10;
+	contrast = 50;
+	setContrast();
+	backlight = true;
+	turnBacklightOn();
+}
+
+
+void setContrast()
+{
+	//lcd.backlight(contrast);
+}
+
+void turnBacklightOn()
+{
+	setBit(PORTB,0);
+}
+
+void turnBacklightOff()
+{
+	clearBit(PORTB,0);
+}
+
