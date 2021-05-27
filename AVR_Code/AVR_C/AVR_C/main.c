@@ -678,7 +678,9 @@ void volumeInt(){
 	lcdSetCursor(5, 0);
 	lcdPrint("Volume");
 	lcdSetCursor(5, 2);
-	lcdPrint(volume);
+	char s_volume[10];
+	itoa(volume,s_volume,10);
+	lcdPrint(s_volume);
 	//lcd.display();
 }
 
@@ -687,7 +689,9 @@ void contrastInt(){
 	lcdSetCursor(4, 0);
 	lcdPrint("Contrast");
 	lcdSetCursor(5, 2);
-	lcdPrint(contrast);
+	char s_contrast[10];
+	itoa(contrast,s_contrast,10);
+	lcdPrint(s_contrast);
 	//lcd.display();
 }
 
