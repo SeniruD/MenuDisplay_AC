@@ -5,12 +5,13 @@
  * Author : SENIRU
  */ 
 
-#define F_CPU	8000000UL // 8 MHz clock speed
+#define F_CPU	16000000UL // 8 MHz clock speed
 
 
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "lcd.h"
 
 #define BV(x)				(1 << x)
@@ -18,7 +19,7 @@
 #define clearBit(P,B)		P &= ~BV(B)
 #define toggleBit(P,B)      P ^= BV(B)
 
-bool backlight = true;
+bool backlight = false;
 int contrast = 10;
 int volume = 10;
 
@@ -67,10 +68,10 @@ void turnBacklightOff();
 
 int main(void)
 {
-	DDRD = 0x00; //Set PORTD as input pins
-    PORTD = 0xF0; //Set PD0, PD1, PD6, PD7 to INPUT PULL_UP
-	DDRB = 0xFD;              //Set RS,En,data pins as output
-	clearBit(PORTB,0);   //Turn backlight off 
+	DDRD = 0x01; //Set PORTD 4,5,6,7 pins as input pins & Set PORTD0 pin as output
+    PORTD = 0xF0; //Set PD0, PD1, PD6, PD7 to INPUT PULL_UP and LOW pin0
+	DDRB = 0x3F;              //Set RS,En,data pins as output
+	//clearBit(PORTD,0);   //Turn backlight off 
 	lcdInit();
 
     while (1) 
@@ -909,11 +910,11 @@ void setContrast()
 
 void turnBacklightOn()
 {
-	setBit(PORTB,0);
+	setBit(PORTD,0);
 }
 
 void turnBacklightOff()
 {
-	clearBit(PORTB,0);
+	clearBit(PORTD,0);
 }
 

@@ -10,12 +10,13 @@
 #define clearBit(P,B)		P &= ~BV(B)
 #define toggleBit(P,B)                   P ^= BV(B)
 
-#define RS                  PORTB3
-#define En                  PORTB2
+#define RS                  PORTB1
+#define En                  PORTB0
 #define Line1 0x80
 #define Line2 0xc0
 #define Line3 0x90
 #define Line4 0xD0
+
 
 void lcdInit();
 void lcdDisplay();
@@ -41,12 +42,12 @@ void lcdInit()
 
 void lcdDisplay()
 {
-	lcdCmdwrite(0x0C);
+	lcdCmdWrite(0x0C);
 }
 void lcdCmdWrite( char cmd)
 {
 	
-	PORTB = (cmd & 0xf0);        // Send the Higher Nibble of the command to LCD
+	PORTB = ((cmd>>2) & 0x3C);        // Send the Higher Nibble of the command to LCD
 	clearBit(PORTB,RS);			 // Register select = 0
 	setBit(PORTB,En);            // Enable high to low
 	_delay_us(120);
@@ -54,7 +55,7 @@ void lcdCmdWrite( char cmd)
 	
 	_delay_us(10);				
 	
-	PORTB = ((cmd<<4) & 0xf0);   // Send the Lower Nibble of the command to LCD
+	PORTB = ((cmd<<2) & 0x3C);   // Send the Lower Nibble of the command to LCD
 	clearBit(PORTB,RS);          // Register select = 0
 	setBit(PORTB,En);			 // Enable high to low
 	_delay_us(120);
@@ -65,7 +66,7 @@ void lcdCmdWrite( char cmd)
 
 void lcdDataWrite( char data)
 {
-	PORTB = (data & 0xf0);	  // Send the Higher Nibble of the Data to LCD
+	PORTB = ((data>>2) & 0x3C);	  // Send the Higher Nibble of the Data to LCD
 	setBit(PORTB,RS);         // Register select = 1
 	setBit(PORTB,En);		  // Enable high to low
 	_delay_us(120);
@@ -73,7 +74,7 @@ void lcdDataWrite( char data)
 	
 	_delay_us(10);
 	
-	PORTB = ((data <<4) & 0xf0); // Send the Lower Nibble of the Data to LCD
+	PORTB = ((data <<2) & 0x3C); // Send the Lower Nibble of the Data to LCD
 	setBit(PORTB,RS);            // Register select = 1
 	setBit(PORTB,En);   		 // Enable high to low
 	_delay_us(120);
