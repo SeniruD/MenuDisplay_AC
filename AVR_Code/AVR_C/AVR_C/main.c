@@ -5,14 +5,15 @@
  * Author : SENIRU
  */ 
 
-#define F_CPU	16000000UL // 8 MHz clock speed
+#define F_CPU	16000000UL // 16 MHz clock speed
 
 
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "lcd.h"
+#include "I2C.h"
+#include "LCD_I2C.h"
 
 #define BV(x)				(1 << x)
 #define setBit(P,B)			P |= BV(B)
@@ -70,8 +71,10 @@ int main(void)
 {
 	DDRD = 0x01; //Set PORTD 4,5,6,7 pins as input pins & Set PORTD0 pin as output
     PORTD = 0xF0; //Set PD0, PD1, PD6, PD7 to INPUT PULL_UP and LOW pin0
-	DDRB = 0x3F;              //Set RS,En,data pins as output
 	//clearBit(PORTD,0);   //Turn backlight off 
+	i2c_init();
+	i2c_start();
+	i2c_write(0x4E);
 	lcdInit();
 
     while (1) 
